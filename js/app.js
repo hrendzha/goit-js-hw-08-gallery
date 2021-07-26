@@ -54,9 +54,8 @@ const lightboxImgRef = lightboxRef.querySelector('.lightbox__image');
 
 galleryRef.insertAdjacentHTML('beforeend', createGalleryItemsMarkup(galleryItems));
 
-galleryRef.addEventListener('click', onGalleryImageClick);
-lightboxRef.addEventListener('click', onLightboxClick);
-lightboxRef.addEventListener('keydown', onLightboxKeyPress);
+galleryRef.addEventListener('click', onFullImageOpen);
+lightboxRef.addEventListener('click', onFullImageClose);
 
 function createGalleryItemsMarkup(galleryItems) {
     return galleryItems
@@ -79,8 +78,10 @@ function createGalleryItemsMarkup(galleryItems) {
         .join('');
 }
 
-function onGalleryImageClick(event) {
+function onFullImageOpen(event) {
     event.preventDefault();
+
+    window.addEventListener('keydown', onEscKeyPress);
 
     const { target } = event;
 
@@ -97,11 +98,13 @@ function toggleClassOnLightbox() {
     lightboxRef.classList.toggle('is-open');
 }
 
-function onLightboxClick({ target }) {
+function onFullImageClose({ target }) {
     const lightboxBtnCloseRef = document.querySelector('[data-action="close-lightbox"]');
     const lightboxOverlayRef = document.querySelector('.lightbox__overlay');
 
     if (target === lightboxBtnCloseRef || target === lightboxOverlayRef) {
+        window.removeEventListener('keydown', onEscKeyPress);
+
         toggleClassOnLightbox();
         setTimeout(clearAttributeValueUrl, 250);
     }
@@ -116,6 +119,8 @@ function clearAttributeValueUrl() {
     lightboxImgRef.src = '';
 }
 
-function onLightboxKeyPress(e) {
-    console.log(e.code);
+function onEscKeyPress({ target, code }) {
+    if (code === 'Escape') {
+        console.log('yes');
+    }
 }
