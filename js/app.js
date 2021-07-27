@@ -86,7 +86,7 @@ function onFullImageOpenClick(event) {
 
     if (target.nodeName !== 'IMG') return;
 
-    currentTarget.removeEventListener('keydown', onFullImageOpenWithEnter);
+    removeEventListenerOnFullImageOpenWithEnter();
     window.addEventListener('keydown', onEscKeyPress);
 
     switchesGalleryWithArrows();
@@ -165,17 +165,19 @@ function onGalleryLinkFocusWithTab({ currentTarget }) {
     currentTarget.addEventListener('keydown', onFullImageOpenWithEnter);
 }
 
-function onFullImageOpenWithEnter({ code, currentTarget, target }) {
+function onFullImageOpenWithEnter({ code, target }) {
     if (code === 'Tab') {
-        currentTarget.removeEventListener('keydown', onFullImageOpenWithEnter);
+        removeEventListenerOnFullImageOpenWithEnter();
+        return;
     }
-
-    window.addEventListener('keydown', onEscKeyPress);
 
     const originalImgUrl = target.firstElementChild.dataset.source;
     const imgDesc = target.firstElementChild.alt;
 
     if (code === 'Enter') {
+        window.addEventListener('keydown', onEscKeyPress);
+        switchesGalleryWithArrows();
+
         toggleClassOnLightbox();
         replaceAttributeValueOnLightbox(originalImgUrl, imgDesc);
     }
@@ -188,4 +190,8 @@ function removeEventListenerOnEscKeyPress() {
 function removeEventListenersOnArrowsPress() {
     window.removeEventListener('keydown', onRightArrowPress);
     window.removeEventListener('keydown', onLeftArrowPress);
+}
+
+function removeEventListenerOnFullImageOpenWithEnter() {
+    galleryRef.removeEventListener('keydown', onFullImageOpenWithEnter);
 }
