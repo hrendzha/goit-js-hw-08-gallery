@@ -25,6 +25,10 @@ body {
     color: #212121;
 }
 
+img {
+    display: block;
+}
+
 .gallery {
     display: grid;
     width: 1200px;
@@ -105,7 +109,6 @@ body {
 }
 
 .lightbox__image {
-    display: block;
     width: auto;
     height: auto;
     max-height: 100%;

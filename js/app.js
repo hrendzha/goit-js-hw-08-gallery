@@ -54,8 +54,9 @@ const lightboxImgRef = lightboxRef.querySelector('.lightbox__image');
 
 galleryRef.insertAdjacentHTML('beforeend', createGalleryItemsMarkup(galleryItems));
 
-galleryRef.addEventListener('click', onFullImageOpen);
-lightboxRef.addEventListener('click', onFullImageClose);
+galleryRef.addEventListener('click', onFullImageOpenClick);
+lightboxRef.addEventListener('click', onFullImageCloseClick);
+galleryRef.addEventListener('focusin', onGalleryLinkFocusWithTab);
 
 function createGalleryItemsMarkup(galleryItems) {
     return galleryItems
@@ -78,14 +79,17 @@ function createGalleryItemsMarkup(galleryItems) {
         .join('');
 }
 
-function onFullImageOpen(event) {
+function onFullImageOpenClick(event) {
     event.preventDefault();
 
-    window.addEventListener('keydown', onEscKeyPress);
-
-    const { target } = event;
+    const { target, currentTarget } = event;
 
     if (target.nodeName !== 'IMG') return;
+
+    currentTarget.removeEventListener('keydown', onFullImageOpenWithEnter);
+    window.addEventListener('keydown', onEscKeyPress);
+
+    switchesGalleryWithArrows();
 
     const originalImgUrl = target.dataset.source;
     const imgDesc = target.alt;
@@ -94,19 +98,47 @@ function onFullImageOpen(event) {
     replaceAttributeValueOnLightbox(originalImgUrl, imgDesc);
 }
 
+function switchesGalleryWithArrows() {
+    window.addEventListener('keydown', onLeftArrowPress);
+    window.addEventListener('keydown', onRightArrowPress);
+}
+
+function onLeftArrowPress({ code }) {
+    const previousImgRef = galleryRef
+        .querySelector(`[data-source="${lightboxImgRef.src}"]`)
+        .closest('.gallery__item')
+        .previousElementSibling?.querySelector('.gallery__image');
+
+    if (code === 'ArrowLeft' && previousImgRef) {
+        replaceAttributeValueOnLightbox(previousImgRef.dataset.source, previousImgRef.alt);
+    }
+}
+
+function onRightArrowPress({ code }) {
+    const nextImgRef = galleryRef
+        .querySelector(`[data-source="${lightboxImgRef.src}"]`)
+        .closest('.gallery__item')
+        .nextElementSibling?.querySelector('.gallery__image');
+
+    if (code === 'ArrowRight' && nextImgRef) {
+        replaceAttributeValueOnLightbox(nextImgRef.dataset.source, nextImgRef.alt);
+    }
+}
+
 function toggleClassOnLightbox() {
     lightboxRef.classList.toggle('is-open');
 }
 
-function onFullImageClose({ target }) {
+function onFullImageCloseClick({ target }) {
     const lightboxBtnCloseRef = document.querySelector('[data-action="close-lightbox"]');
     const lightboxOverlayRef = document.querySelector('.lightbox__overlay');
 
     if (target === lightboxBtnCloseRef || target === lightboxOverlayRef) {
-        window.removeEventListener('keydown', onEscKeyPress);
-
         toggleClassOnLightbox();
         setTimeout(clearAttributeValueUrl, 250);
+
+        removeEventListenerOnEscKeyPress();
+        removeEventListenersOnArrowsPress();
     }
 }
 
@@ -119,8 +151,41 @@ function clearAttributeValueUrl() {
     lightboxImgRef.src = '';
 }
 
-function onEscKeyPress({ target, code }) {
+function onEscKeyPress({ code }) {
     if (code === 'Escape') {
-        console.log('yes');
+        toggleClassOnLightbox();
+        setTimeout(clearAttributeValueUrl, 250);
+
+        removeEventListenerOnEscKeyPress();
+        removeEventListenersOnArrowsPress();
     }
+}
+
+function onGalleryLinkFocusWithTab({ currentTarget }) {
+    currentTarget.addEventListener('keydown', onFullImageOpenWithEnter);
+}
+
+function onFullImageOpenWithEnter({ code, currentTarget, target }) {
+    if (code === 'Tab') {
+        currentTarget.removeEventListener('keydown', onFullImageOpenWithEnter);
+    }
+
+    window.addEventListener('keydown', onEscKeyPress);
+
+    const originalImgUrl = target.firstElementChild.dataset.source;
+    const imgDesc = target.firstElementChild.alt;
+
+    if (code === 'Enter') {
+        toggleClassOnLightbox();
+        replaceAttributeValueOnLightbox(originalImgUrl, imgDesc);
+    }
+}
+
+function removeEventListenerOnEscKeyPress() {
+    window.removeEventListener('keydown', onEscKeyPress);
+}
+
+function removeEventListenersOnArrowsPress() {
+    window.removeEventListener('keydown', onRightArrowPress);
+    window.removeEventListener('keydown', onLeftArrowPress);
 }
