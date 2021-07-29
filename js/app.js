@@ -82,25 +82,29 @@ function createGalleryItemsMarkup(galleryItems) {
 function onFullImageOpenClick(event) {
     event.preventDefault();
 
-    const { target, currentTarget } = event;
+    const { target } = event;
 
     if (target.nodeName !== 'IMG') return;
 
     removeEventListenerOnFullImageOpenWithEnter();
     window.addEventListener('keydown', onEscKeyPress);
 
-    switchesGalleryWithArrows();
-
     const originalImgUrl = target.dataset.source;
     const imgDesc = target.alt;
 
     toggleClassOnLightbox();
     replaceAttributeValueOnLightbox(originalImgUrl, imgDesc);
+    switchesGalleryWithArrows();
 }
 
 function switchesGalleryWithArrows() {
     window.addEventListener('keydown', onLeftArrowPress);
     window.addEventListener('keydown', onRightArrowPress);
+}
+
+function removeEventListenersOnArrowsPress() {
+    window.removeEventListener('keydown', onRightArrowPress);
+    window.removeEventListener('keydown', onLeftArrowPress);
 }
 
 function onLeftArrowPress({ code }) {
@@ -161,6 +165,10 @@ function onEscKeyPress({ code }) {
     }
 }
 
+function removeEventListenerOnEscKeyPress() {
+    window.removeEventListener('keydown', onEscKeyPress);
+}
+
 function onGalleryLinkFocusWithTab({ currentTarget }) {
     currentTarget.addEventListener('keydown', onFullImageOpenWithEnter);
 }
@@ -181,15 +189,6 @@ function onFullImageOpenWithEnter({ code, target }) {
         toggleClassOnLightbox();
         replaceAttributeValueOnLightbox(originalImgUrl, imgDesc);
     }
-}
-
-function removeEventListenerOnEscKeyPress() {
-    window.removeEventListener('keydown', onEscKeyPress);
-}
-
-function removeEventListenersOnArrowsPress() {
-    window.removeEventListener('keydown', onRightArrowPress);
-    window.removeEventListener('keydown', onLeftArrowPress);
 }
 
 function removeEventListenerOnFullImageOpenWithEnter() {
