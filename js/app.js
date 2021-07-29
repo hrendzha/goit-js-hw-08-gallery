@@ -174,6 +174,8 @@ function onGalleryLinkFocusWithTab({ currentTarget }) {
 }
 
 function onFullImageOpenWithEnter({ code, target }) {
+    if (lightboxRef.classList.contains('is-open')) return;
+
     if (code === 'Tab') {
         removeEventListenerOnFullImageOpenWithEnter();
         return;
