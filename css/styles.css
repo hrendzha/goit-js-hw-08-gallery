@@ -115,6 +115,14 @@ img {
     max-width: 100vw;
 }
 
+.lightbox__image.hide {
+    opacity: 0;
+}
+
+.lightbox__image.back {
+    opacity: 1;
+}
+
 .lightbox__button {
     position: absolute;
     top: 8px;

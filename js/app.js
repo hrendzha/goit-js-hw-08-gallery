@@ -53,6 +53,7 @@ const lightboxRef = document.querySelector('.js-lightbox');
 const lightboxImgRef = lightboxRef.querySelector('.lightbox__image');
 
 galleryRef.insertAdjacentHTML('beforeend', createGalleryItemsMarkup(galleryItems));
+addImgLazyLoading();
 
 galleryRef.addEventListener('click', onFullImageOpenClick);
 lightboxRef.addEventListener('click', onFullImageCloseClick);
@@ -68,10 +69,11 @@ function createGalleryItemsMarkup(galleryItems) {
                     href="${original}"
                 >
                     <img
-                        class="gallery__image"
-                        src="${preview}"
+                        class="gallery__image lazyload"
+                        data-src="${preview}"
                         data-source="${original}"
                         alt="${description}"
+                        loading="lazy"
                     />
                 </a>
                 </li>`,
@@ -114,6 +116,7 @@ function onLeftArrowPress({ code }) {
         .previousElementSibling?.querySelector('.gallery__image');
 
     if (code === 'ArrowLeft' && previousImgRef) {
+        animationSwitchGalleryImg();
         replaceAttributeValueOnLightbox(previousImgRef.dataset.source, previousImgRef.alt);
     }
 }
@@ -125,6 +128,7 @@ function onRightArrowPress({ code }) {
         .nextElementSibling?.querySelector('.gallery__image');
 
     if (code === 'ArrowRight' && nextImgRef) {
+        animationSwitchGalleryImg();
         replaceAttributeValueOnLightbox(nextImgRef.dataset.source, nextImgRef.alt);
     }
 }
@@ -195,4 +199,40 @@ function onFullImageOpenWithEnter({ code, target }) {
 
 function removeEventListenerOnFullImageOpenWithEnter() {
     galleryRef.removeEventListener('keydown', onFullImageOpenWithEnter);
+}
+
+function addImgLazyLoading() {
+    if ('loading' in HTMLImageElement.prototype) {
+        const lazyImagesRef = document.querySelectorAll('img[loading="lazy"]');
+        lazyImagesRef.forEach(img => {
+            img.src = img.dataset.src;
+        });
+    } else {
+        const lazysizesScriptRef = document.createElement('script');
+        lazysizesScriptRef.src =
+            'https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js';
+        lazysizesScriptRef.integrity =
+            'sha512-q583ppKrCRc7N5O0n2nzUiJ+suUv7Et1JGels4bXOaMFQcamPk9HjdUknZuuFjBNs7tsMuadge5k9RzdmO+1GQ==';
+        lazysizesScriptRef.crossorigin = 'anonymous';
+        lazysizesScriptRef.referrerpolicy = 'no-referrer';
+
+        document.body.appendChild(lazysizesScriptRef);
+    }
+}
+
+function onImgLoad() {
+    lightboxImgRef.style.cssText =
+        'transition: opacity var(--animation-duration) var(--timing-function)';
+    lightboxImgRef.classList.replace('hide', 'back');
+}
+
+function animationSwitchGalleryImg() {
+    if (lightboxImgRef.classList.contains('back')) {
+        lightboxImgRef.classList.replace('back', 'hide');
+    } else {
+        lightboxImgRef.classList.add('hide');
+    }
+
+    lightboxImgRef.addEventListener('load', onImgLoad);
+    lightboxImgRef.style = '';
 }
